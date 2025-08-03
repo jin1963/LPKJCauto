@@ -95,9 +95,3 @@ async function switchToBSC() {
 export function getCurrentAccount() {
   return account;
 }
-
-export function getStakingContract() {
-  return stakingContract;
-}
-
-export { web3, stakingContract, lpToken, kjcToken };
