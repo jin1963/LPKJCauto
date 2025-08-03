@@ -3,6 +3,7 @@
 import {
   stakingContract,
   lpToken,
+  kjcToken,
   getCurrentAccount,
   lpTokenDecimals,
   kjcTokenDecimals
@@ -14,7 +15,6 @@ import {
   toWeiFromInput
 } from './utils.js';
 
-// 🔁 Stake LP Token
 export async function stakeLP() {
   const account = getCurrentAccount();
   if (!account) {
@@ -24,29 +24,22 @@ export async function stakeLP() {
 
   const input = document.getElementById("lpAmount").value.trim();
   if (!input || isNaN(input) || parseFloat(input) <= 0) {
-    alert("❌ กรุณากรอกจำนวนที่ต้องการ Stake ให้ถูกต้อง");
+    alert("❌ กรุณากรอกจำนวน LP Token ให้ถูกต้อง");
     return;
   }
 
   const amountWei = toWeiFromInput(input, lpTokenDecimals);
 
   try {
-    // ✅ อนุมัติ LP Token
-    await lpToken.methods
-      .approve(stakingContract.options.address, amountWei)
-      .send({ from: account });
-
-    // ✅ Stake
+    await lpToken.methods.approve(stakingContract.options.address, amountWei).send({ from: account });
     await stakingContract.methods.stakeLP(amountWei).send({ from: account });
-
-    alert("✅ Stake LP สำเร็จแล้ว!");
-    loadStakeData();
+    alert("✅ Stake สำเร็จแล้ว");
+    await loadStakeData();
   } catch (err) {
     alert(getFriendlyErrorMessage(err));
   }
 }
 
-// 🎁 เคลมรางวัล Staking
 export async function claimStakingReward() {
   const account = getCurrentAccount();
   if (!account) {
@@ -57,13 +50,12 @@ export async function claimStakingReward() {
   try {
     await stakingContract.methods.claimStakingReward().send({ from: account });
     alert("✅ เคลมรางวัลสำเร็จ");
-    loadStakeData();
+    await loadStakeData();
   } catch (err) {
     alert(getFriendlyErrorMessage(err));
   }
 }
 
-// 🔓 ถอน LP หลังครบเวลา
 export async function withdrawLP() {
   const account = getCurrentAccount();
   if (!account) {
@@ -74,13 +66,12 @@ export async function withdrawLP() {
   try {
     await stakingContract.methods.withdrawLP().send({ from: account });
     alert("✅ ถอน LP สำเร็จแล้ว");
-    loadStakeData();
+    await loadStakeData();
   } catch (err) {
     alert(getFriendlyErrorMessage(err));
   }
 }
 
-// 📊 โหลดข้อมูล Stake
 export async function loadStakeData() {
   const account = getCurrentAccount();
   if (!account) {
@@ -99,7 +90,7 @@ export async function loadStakeData() {
     document.getElementById("stakedLP").innerText = `${amount}`;
     document.getElementById("claimableReward").innerText = `${reward}`;
   } catch (e) {
-    console.warn("❌ โหลดข้อมูล stake ไม่ได้", e);
+    console.warn("⚠️ โหลดข้อมูล stake ไม่ได้:", e);
     document.getElementById("stakedLP").innerText = "-";
     document.getElementById("claimableReward").innerText = "-";
   }
